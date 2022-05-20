@@ -64,17 +64,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const firstDaySelect = document.querySelector("#first-day");
   const langSelect = document.querySelector("#language");
 
-  navigator.languages
-    .map((lang) => {
-      const opt = document.createElement("option");
-      opt.value = lang;
-      opt.append(lang);
+  const langOpts = navigator.languages.map((lang) => {
+    const opt = document.createElement("option");
+    opt.value = lang;
+    opt.append(
+      capitalize(new Intl.DisplayNames(lang, { type: "language" }).of(lang))
+    );
 
-      return opt;
-    })
-    .forEach((opt) => {
-      langSelect.appendChild(opt);
-    });
+    return opt;
+  });
+
+  langSelect.append(...langOpts);
 
   langSelect.addEventListener("change", ({ target: { value: lang } }) => {
     const dayOffset = firstDaySelect.value;

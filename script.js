@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
   langSelect.addEventListener("change", ({ target: { value: lang } }) => {
     const dayOffset = firstDaySelect.value;
     setWeekOpts(lang);
-    updateWeekdays(lang, dayOffset);
+    updateWeekdays(lang, Number(dayOffset));
     firstDaySelect.value = dayOffset;
   });
 

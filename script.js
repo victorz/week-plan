@@ -1,6 +1,8 @@
 const capitalize = (s) =>
   s.length === 0 ? "" : s[0]?.toUpperCase() + s.substring(1);
 
+const getMonday = () => new Date(1970, 0, 5);
+
 function range(a, b) {
   if (b === undefined) {
     b = a;
@@ -9,8 +11,6 @@ function range(a, b) {
 
   return Array.from(Array(b).keys()).map((i) => a + i);
 }
-
-const getMonday = () => new Date(1970, 0, 5);
 
 function updateWeekdays(lang, offset = 0) {
   const weekdays = getWeekdays(lang);
@@ -63,6 +63,7 @@ function setWeekOpts(lang) {
 document.addEventListener("DOMContentLoaded", () => {
   const firstDaySelect = document.querySelector("#first-day");
   const langSelect = document.querySelector("#language");
+
   navigator.languages
     .map((lang) => {
       const opt = document.createElement("option");
@@ -76,7 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   langSelect.addEventListener("change", ({ target: { value: lang } }) => {
+    const dayOffset = firstDaySelect.value;
     setWeekOpts(lang);
+    updateWeekdays(lang, dayOffset);
+    firstDaySelect.value = dayOffset;
   });
 
   firstDaySelect.addEventListener("change", ({ target: { value: offset } }) => {
@@ -84,5 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateWeekdays(langSelect.value, Number(offset));
   });
 
+  setWeekOpts(navigator.language);
   updateWeekdays(navigator.language);
 });

@@ -1,46 +1,53 @@
-function* rangeGen(a, b) {
+const capitalize = (s) =>
+  s.length === 0 ? "" : s[0]?.toUpperCase() + s.substring(1);
+
+function range(a, b) {
   if (b === undefined) {
     b = a;
     a = 0;
   }
 
-  for (let i = a; i < b; i++) {
-    yield i;
-  }
+  return Array.from(Array(b).keys()).map((i) => a + i);
 }
 
-const capitalize = (s) =>
-  s.length === 0 ? "" : s[0]?.toUpperCase() + s.substring(1);
-
-const range = (a, b) => Array.from(rangeGen(a, b));
 const getMonday = () => new Date(1970, 0, 5);
 
-function buildWeek(weekdays, offset = 0) {
-  const week = document.querySelector(".week");
+function updateWeekdays(lang, offset = 0) {
+  const weekdays = getWeekdays(lang);
+  const divs = range(7)
+    .map((i) => weekdays[(i + offset) % 7])
+    .map((day) => {
+      const div = document.createElement("div");
+      div.append(day);
 
-  range(7).forEach((i) => {
-    const index = (i + offset) % 7;
-    const day = weekdays[index];
-    const div = document.createElement("div");
-    div.append(day);
-    week.append(div);
-  });
+      return div;
+    });
+
+  const week = document.querySelector(".week");
+  clearElement(week);
+  week.append(...divs);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const firstDaySelect = document.querySelector("select#first-day");
-  const dayFmt = new Intl.DateTimeFormat("sv-SE", {
+function getWeekdays(lang) {
+  const dayFmt = new Intl.DateTimeFormat(lang, {
     weekday: "long",
   });
 
-  const weekdays = range(7).map((index) => {
-    const day = getMonday();
-    day.setDate(day.getDate() + index);
+  return range(7)
+    .map(() => getMonday())
+    .map((mon, i) => (mon.setDate(mon.getDate() + i), mon))
+    .map(dayFmt.format)
+    .map(capitalize);
+}
 
-    return capitalize(dayFmt.format(day));
-  });
+function clearElement(el) {
+  while (el.firstChild) {
+    el.lastChild.remove();
+  }
+}
 
-  const opts = weekdays.map((day, index) => {
+function setWeekOpts(lang) {
+  const opts = getWeekdays(lang).map((day, index) => {
     const opt = document.createElement("option");
     opt.value = index;
     opt.append(day);
@@ -48,18 +55,34 @@ document.addEventListener("DOMContentLoaded", () => {
     return opt;
   });
 
-  opts.forEach((opt) => {
-    firstDaySelect.appendChild(opt);
-  });
+  const firstDaySelect = document.querySelector("#first-day");
+  clearElement(firstDaySelect);
+  firstDaySelect.append(...opts);
+}
 
-  buildWeek(weekdays);
+document.addEventListener("DOMContentLoaded", () => {
+  const firstDaySelect = document.querySelector("#first-day");
+  const langSelect = document.querySelector("#language");
+  navigator.languages
+    .map((lang) => {
+      const opt = document.createElement("option");
+      opt.value = lang;
+      opt.append(lang);
+
+      return opt;
+    })
+    .forEach((opt) => {
+      langSelect.appendChild(opt);
+    });
+
+  langSelect.addEventListener("change", ({ target: { value: lang } }) => {
+    setWeekOpts(lang);
+  });
 
   firstDaySelect.addEventListener("change", ({ target: { value: offset } }) => {
     const week = document.querySelector(".week");
-    while (week.firstChild) {
-      week.lastChild.remove();
-    }
-
-    buildWeek(weekdays, Number(offset));
+    updateWeekdays(langSelect.value, Number(offset));
   });
+
+  updateWeekdays(navigator.language);
 });

@@ -9,7 +9,7 @@ function range(a, b) {
     a = 0;
   }
 
-  return Array.from(Array(b).keys()).map((i) => a + i);
+  return Array.from(Array(b - a).keys()).map((i) => a + i);
 }
 
 function updateWeekdays(lang, offset = 0) {
